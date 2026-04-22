@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../models/prediction.dart';
 import '../services/api_service.dart';
 import '../widgets/skeleton_painter.dart';
@@ -64,6 +65,14 @@ class _CameraScreenState extends State<CameraScreen>
 
   Future<void> _initCamera() async {
     try {
+      if (!kIsWeb) {
+        final status = await Permission.camera.request();
+        if (!status.isGranted) {
+          setState(() => _error = 'Camera permission denied.');
+          return;
+        }
+      }
+
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
         setState(() => _error = 'No camera found on this device.');
